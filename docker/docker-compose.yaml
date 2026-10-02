@@ -58,13 +58,40 @@ services:
       retries: 3
       start_period: 40s
 
+  gateway-postgres:
+    image: postgres:16-alpine
+    container_name: gateway-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gateway
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5434:5432"
+    volumes:
+      - gateway_postgres_data:/var/lib/postgresql/data
+    networks:
+      - gateway-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gateway"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 networks:
   bank-network:
     driver: bridge
     name: mockbank-network
+  gateway-network:
+    driver: bridge
+    name: gateway-network
 
 volumes:
   postgres_data:
     name: mockbank-postgres-data
   air_tmp:
     name: mockbank-air-tmp
+  gateway_postgres_data:
+    name: gateway-postgres-data

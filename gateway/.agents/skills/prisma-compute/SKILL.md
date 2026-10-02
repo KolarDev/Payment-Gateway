@@ -1,10 +1,10 @@
 ---
 name: prisma-compute
-description: Prisma Compute deployment and hosting guide. Use whenever the user mentions Prisma Compute, `prisma.compute.ts`, `defineComputeConfig`, deploying or hosting a Prisma app, `@prisma/cli app deploy`, `compute:deploy`, `create-prisma --deploy`, `PRISMA_SERVICE_TOKEN`, `auth workspace`, Compute apps/deployments/build logs/domains, `@prisma/cli agent install`, `@prisma/cli feedback`, localhost vs `0.0.0.0`, deploy port binding, or framework deploy readiness for Hono, Elysia, Next.js, TanStack Start, Astro, Nuxt, Svelte, Nest, Turborepo, or custom/prebuilt artifacts.
+description: Prisma Compute deployment and hosting guide. Use whenever the user mentions Prisma Compute, `prisma.compute.ts`, `defineComputeConfig`, deploying or hosting a Prisma app, `@prisma/cli app deploy`, `compute:deploy`, `create-prisma --deploy`, `PRISMA_SERVICE_TOKEN`, Compute auth/workspaces, apps/deployments/build logs/domains, localhost vs `0.0.0.0`, deploy port binding, or framework deploy readiness for Hono, Elysia, Next.js, TanStack Start, Astro, Nuxt, Svelte, Nest, Turborepo, or custom/prebuilt artifacts.
 license: MIT
 metadata:
   author: prisma
-  version: "1.4.1"
+  version: "1.5.1"
 ---
 
 # Prisma Compute
@@ -57,8 +57,7 @@ Use this skill for:
 - Inspecting GitHub/Console build logs and GitHub push-to-deploy status
 - Running non-interactive deploys with browser auth, multiple stored workspaces, or Prisma service tokens
 - Switching, selecting, listing, or logging out local Prisma Platform workspaces for `@prisma/cli`
-- Installing or updating Prisma skills with `@prisma/cli agent install|update|status`
-- Sending feedback or reporting unresolvable CLI failures with `@prisma/cli feedback`
+- Sending feedback about an unresolvable Compute CLI failure with `@prisma/cli feedback`
 - Programmatic deployments with `@prisma/compute-sdk` or Management API integrations
 
 ## Decision Tree
@@ -128,6 +127,7 @@ Use this skill for:
 - `runtime-bind-all-interfaces` - Deployed servers must bind on all interfaces (`0.0.0.0` or the framework equivalent), not hard-coded `localhost` or `127.0.0.1`.
 - `runtime-match-http-port` - The app must listen on the deployed HTTP port: read `process.env.PORT` when possible, or pass the matching `--http-port`.
 - `runtime-readiness-port-only` - Compute readiness watches listening ports; a loopback-only listener can look ready while public ingress cannot reach it.
+- `runtime-respond-within-60s` - The ingress gives an app 60 seconds to start responding, then returns `504 Gateway Time-out` and cancels the request. Design handlers to answer first and run longer work under `waitUntil` or from a queue, never inside the request.
 
 ### 5. Typed Compute Config
 
@@ -168,6 +168,7 @@ Use this skill for:
 
 - `sdk-use-cli-first` - Prefer `@prisma/cli app deploy` for app workflows; use `create-prisma` only to scaffold a new app unless the user is building lower-level automation.
 - `sdk-result-handling` - `@prisma/compute-sdk` returns `Result` values; check `isOk()`/`isErr()` instead of relying on exceptions.
+- `sdk-snapshot-detection` - Use `detectComputeApp` for repository snapshots that are not checked out to disk; enumerate workspaces yourself and call it once per candidate app root.
 
 ## Preferred Workflow
 
